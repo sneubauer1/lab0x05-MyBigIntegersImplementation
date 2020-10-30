@@ -1,5 +1,7 @@
 package com.company;
 
+import java.math.BigInteger;
+
 public class MyBigIntegers{
 
     private String value;
@@ -76,13 +78,39 @@ public class MyBigIntegers{
         return new MyBigIntegers( getValue() );
     }
 
+    public boolean equalityOP (MyBigIntegers b){
+        return equals(this, b);
+    }
+
+    public void equalOP(MyBigIntegers b){
+        setValue( b.getValue() );
+        setSign( b.getSign() );
+    }
+
     public boolean equals(MyBigIntegers a, MyBigIntegers b){
         return a.getValue().equals(b.getValue())
                 && a.getSign() == b.getSign();
     }
 
+    public boolean lessThanEquals(MyBigIntegers b){
+        return equals(this , b)
+		|| less(this, b);
+    }
+
+    public MyBigIntegers incrementPostFix(){
+        MyBigIntegers before = this;
+        MyBigIntegers one = new MyBigIntegers("1");
+        this.equalOP(this.plus(one));
+
+        return before;
+    }
+
     public boolean greater( MyBigIntegers a, MyBigIntegers b){
         return ! equals( a , b) && ! less ( a, b);
+    }
+
+    public boolean lessThan(MyBigIntegers b) {
+        return less(this, b);
     }
 
     public boolean less(MyBigIntegers a, MyBigIntegers b){
