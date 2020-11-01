@@ -2,6 +2,7 @@ package com.company;
 
 import java.math.BigInteger;
 
+
 public class MyBigIntegers{
 
     private String value;
@@ -37,7 +38,7 @@ public class MyBigIntegers{
 
     public String value() {
 
-        if ( sign == true){
+        if (sign){
             String neg = "-";
             String v = value;
             String s = neg + v;
@@ -57,7 +58,7 @@ public class MyBigIntegers{
             String s1 = value.substring(0,5);
             String s2 = value.substring(value.length()-5);
             String abVal = s1 +"..."+ s2;
-            if (sign == true){
+            if (sign){
                 String neg = "-";
                 return neg + abVal;
             } else{
@@ -78,6 +79,8 @@ public class MyBigIntegers{
         return new MyBigIntegers( getValue() );
     }
 
+
+
     public boolean equalityOP (MyBigIntegers b){
         return equals(this, b);
     }
@@ -90,6 +93,12 @@ public class MyBigIntegers{
     public boolean equals(MyBigIntegers a, MyBigIntegers b){
         return a.getValue().equals(b.getValue())
                 && a.getSign() == b.getSign();
+    }
+
+
+    public String toString(int n) {
+        String s = String.valueOf(n);
+        return s;
     }
 
     public boolean lessThanEquals(MyBigIntegers b){
@@ -150,7 +159,7 @@ public class MyBigIntegers{
     public MyBigIntegers plus(MyBigIntegers b){
 
         MyBigIntegers addition = new MyBigIntegers();
-        if( getSign() == b.getSign() ) // both +ve or -ve
+        if( getSign() == b.getSign() ) // both + or -
         {
             addition.setValue( add(getValue(), b.getValue() ) );
             addition.setSign( getSign() );
@@ -193,6 +202,31 @@ public class MyBigIntegers{
         return multiply;
     }
 
+    public MyBigIntegers karatsubaTimes(MyBigIntegers b){
+
+        MyBigIntegers karatsuba = new MyBigIntegers();
+
+        karatsuba.setValue( karatsuba(getValue(), b.getValue() ) );
+        karatsuba.setSign( getSign() != b.getSign() );
+
+        if(karatsuba.getValue().equals("0")) // avoid (-0) problem
+            karatsuba.setSign(false);
+
+        return karatsuba;
+    }
+    public MyBigIntegers dividedBy(MyBigIntegers b){
+        int den = toInt( b.getValue() );
+        MyBigIntegers div = new MyBigIntegers();
+
+        div.setValue( divide(getValue(), den));
+        div.setSign( getSign() != b.getSign() );
+
+        if(div.getValue().equals("0")) // avoid (-0) problem
+            div.setSign(false);
+
+        return div;
+    }
+
     public String add(String num1, String num2) {
 
         if( num1.charAt(0) == '-'){
@@ -211,7 +245,7 @@ public class MyBigIntegers{
         }
 
         // Take an empty String for storing result
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
         // Calculate difference in lengths
         int diff = num2.length() - num1.length();
@@ -226,7 +260,7 @@ public class MyBigIntegers{
             // current digits and carry
             int sum = ((num1.charAt(i)-'0') +
                     (num2.charAt(i+diff)-'0') + carry);
-            result += (char)(sum % 10 + '0');
+            result.append((char) (sum % 10 + '0'));
             carry = sum / 10;
         }
 
@@ -234,16 +268,18 @@ public class MyBigIntegers{
         for (int i = num2.length() - num1.length() - 1; i >= 0; i--)
         {
             int sum = ((num2.charAt(i) - '0') + carry);
-            result += (char)(sum % 10 + '0');
+            result.append((char) (sum % 10 + '0'));
             carry = sum / 10;
         }
 
         // Add remaining carry
         if (carry > 0)
-            result += (char)(carry + '0');
+            result.append((char) (carry + '0'));
 
         // reverse resultant String
-        return new StringBuilder(result).reverse().toString();
+        StringBuilder resStr = new StringBuilder(result.toString()).reverse();
+        return trim(resStr);
+        //return new StringBuilder(result.toString()).reverse().toString();
     }
 
     public String subtract(String num1, String num2) {
@@ -263,7 +299,7 @@ public class MyBigIntegers{
         }
 
         // Take an empty string for storing result
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
         // Reverse both of strings
         num1 = new StringBuilder(num1).reverse().toString();
@@ -290,7 +326,7 @@ public class MyBigIntegers{
             else
                 carry = 0;
 
-            result += (char)(sub + '0');
+            result.append((char) (sub + '0'));
         }
 
         // subtract remaining digits of larger number
@@ -306,11 +342,13 @@ public class MyBigIntegers{
             else
                 carry = 0;
 
-            result += (char)(sub + '0');
+            result.append((char) (sub + '0'));
         }
 
         // reverse resultant string
-        return new StringBuilder(result).reverse().toString();
+        StringBuilder resStr = new StringBuilder(result.toString()).reverse();
+        return trim(resStr);
+        //return new StringBuilder(result.toString()).reverse().toString();
     }
 
     public String multiply(String num1, String num2){
@@ -320,7 +358,7 @@ public class MyBigIntegers{
 
         // will keep the result number in vector
         // in reverse order
-        int result[] = new int[num1.length() + num2.length()];
+        int[] result = new int[num1.length() + num2.length()];
 
         // Below two indexes are used to
         // find positions in result.
@@ -385,6 +423,169 @@ public class MyBigIntegers{
         return strResult;
     }
 
+    public String divide(String number, int divisor){
+        // As result can be very
+        // large store it in string
+        // but since we need to modify
+        // it very often so using
+        // string builder
+        StringBuilder result
+                = new StringBuilder();
+
+        // We will be iterating
+        // the dividend so converting
+        // it to char array
+        char[] dividend
+                = number.toCharArray();
+
+        // Initially the carry
+        // would be zero
+        int carry = 0;
+
+        // Iterate the dividend
+        for (char c : dividend) {
+            // Prepare the number to
+            // be divided
+            int x
+                    = carry * 10
+                    + Character.getNumericValue(
+                    c);
+
+            // Append the result with
+            // partial quotient
+            result.append(x / divisor);
+
+            // Prepare the carry for
+            // the next Iteration
+            carry = x % divisor;
+        }
+
+        // Remove any leading zeros
+        for (
+                int i = 0;
+                i < result.length(); i++) {
+            if (
+                    result.charAt(i) != '0') {
+                // Return the result
+                return result.substring(i);
+            }
+        }
+        // Return empty string
+        // if number is empty
+        return "";
+    }
+
+    public String karatsuba(String num1, String num2) {
+
+        if ( (num1.length() == 1) || (num2.length() == 1) ){
+            return multiply(num1,num2);
+        }
+
+        // Balance input with padded zeros.
+        int len = Math.max(num1.length(), num2.length());
+        StringBuilder sb1 = new StringBuilder(num1);
+        StringBuilder sb2 = new StringBuilder(num2);
+        for (int a = sb1.length(); a < len; a++) sb1.insert(0, '0');
+        for (int a = sb2.length(); a < len; a++) sb2.insert(0, '0');
+        num1 = sb1.toString();
+        num2 = sb2.toString();
+
+        // Karatsuba algorithm.
+        String[] fComp = split(num1), sComp = split(num2);
+        String a = fComp[0], b = fComp[1];
+        String c = sComp[0], d = sComp[1];
+        // Three recursive multiplications.
+        String a_c = karatsuba(a, c);
+        String b_d = karatsuba(b, d);
+        String ab_cd = karatsuba(add(a, b), add(c, d));
+        String e = subtract(subtract(ab_cd, b_d), a_c);
+        return add(add(pad(a_c, (len >> 1) << 1), pad(e, len >> 1)), b_d);
+    }
+
+    public String trim(StringBuilder sb) {
+        while (sb.length() > 1 && sb.charAt(0) == '0')
+            sb.deleteCharAt(0);
+        return sb.toString();
+    }
+
+    // Split in halves. If odd length first half > second.
+    public String[] split(String s) {
+        int m = s.length() >> 1;
+        m = (s.length() & 1) == 1 ? m + 1 : m;
+        return new String[]{s.substring(0, m), s.substring(m)};
+    }
+
+
+
+    public  String karatsubaAdd(String num1, String num2) {
+        String a, b;
+        if (num1.length() >= num2.length()) {
+            a = num1;
+            b = num2;
+        } else {
+            a = num2;
+            b = num1;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        int c = 0, diff = a.length() - b.length();
+        // Grade school addition.
+        for (int i = a.length() - 1; i >= 0; i--) {
+            int f = a.charAt(i) - '0';
+            int s = i - diff < 0 ? 0 : b.charAt(i - diff) - '0';
+            sb.insert(0, (f + c + s) % 10);
+            c = (f + c + s) / 10;
+        }
+
+        if (c > 0) sb.insert(0, c);
+        return trim(sb);
+    }
+
+    public String karatsubaSubtract(String num1, String num2) {
+        String a = null, b = null;
+
+        // Ensure that the first operand >= the second.
+        if (num1.length() > num2.length()) {
+            a = num1;
+            b = num2;
+        } else if (num1.length() < num2.length()) {
+            a = num2;
+            b = num1;
+        } else {
+            // Digit size is equal, compare each corresponding digits.
+            for (int i = 0; i < num1.length(); i++) {
+                if (num1.charAt(i) - '0' > num2.charAt(i) - '0') {
+                    a = num1;
+                    b = num2;
+                    break;
+                } else if (num2.charAt(i) - '0' > num1.charAt(i) - '0') {
+                    a = num2;
+                    b = num1;
+                    break;
+                }
+            }
+            if (a == null) return "0"; // Num1 equals num2.
+        }
+
+        StringBuilder sb = new StringBuilder();
+        int c = 0, diff = a.length() - b.length();
+        // Grade school subtraction.
+        for (int i = a.length() - 1; i >= 0; i--) {
+            int f = a.charAt(i) - '0';
+            int s = i - diff < 0 ? 0 : b.charAt(i - diff) - '0';
+            int p = f - c - s;
+            if (p < 0) {
+                p += 10;
+                c = 1;
+            } else {
+                c = 0;
+            }
+            sb.insert(0, p);
+        }
+
+        return trim(sb);
+    }
+
     public boolean isSmaller(String num1, String num2){
 
         if (num1.length() < num2.length()) {
@@ -402,6 +603,21 @@ public class MyBigIntegers{
         }
         return false;
 
+    }
+
+    public String pad(String num, int zeros) {
+        StringBuilder sb = new StringBuilder(num);
+        for (int a = 0; a < zeros; a++) sb.append('0');
+        return sb.toString();
+    }
+
+    public int toInt( String s){
+        int sum = 0;
+
+        for(int i=0; i<s.length(); i++)
+            sum = (sum*10) + (s.charAt(i) - '0');
+
+        return sum;
     }
 
 }
